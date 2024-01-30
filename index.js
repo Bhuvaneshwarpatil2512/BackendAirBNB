@@ -12,7 +12,7 @@ const imageDownloader = require('image-downloader');
 const multer = require('multer');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const URL = process.env.URL;
+
 
 //env is config
 require('dotenv').config();
