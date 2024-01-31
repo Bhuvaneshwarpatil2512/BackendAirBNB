@@ -13,6 +13,7 @@ const multer = require('multer');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 
+//mongodb+srv://Yash:<password>@cluster0.wbyudy1.mongodb.net/
 
 //env is config
 require('dotenv').config();
@@ -29,7 +30,7 @@ app.use(cors({
     origin: 'http://localhost:5173',
 }));
 
-mongoose.connect('mongodb://localhost:27017/Hotel')
+mongoose.connect(process.env.URL)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
 
@@ -45,13 +46,13 @@ function getUserDataFromReq(req) {
 }
 
 app.get('/test', (req ,res) =>{
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
     res.json('test ok');
 });
                                                                                 
 //calling api for post registration
 app.post('/register', async (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {name,email,password} =req.body;
   //User stand for User file that is Schema pf Registration 
   try {
@@ -66,7 +67,7 @@ app.post('/register', async (req,res) => {
   }
 });
 app.post('/login', async (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {email,password} = req.body;
   const userDoc = await User.findOne({email});
   if (userDoc) {
@@ -123,7 +124,7 @@ app.post('/upload-by-link', async (req, res) => {
 //uloading photos from --form
 const photoMiddlware = multer({dest:'uploads/'});
 app.post('/upload',photoMiddlware.array('photos', 100), async(res,req) =>{
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const uploadedFiles = [];
   for (let i = 0; i < req.files.length; i++) {
     const {path,originalname} = req.files[i];
@@ -137,7 +138,7 @@ app.post('/upload',photoMiddlware.array('photos', 100), async(res,req) =>{
 });
 
 app.post('/places', (req,res)=>{
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {token} = req.cookies;
   const {
     title,address,addedPhotos,description,price,
@@ -155,7 +156,7 @@ app.post('/places', (req,res)=>{
 });
 
 app.get('/user-places', (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {token} = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
     const {id} = userData;
@@ -164,13 +165,13 @@ app.get('/user-places', (req,res) => {
 });
 
 app.get('/places/:id', async (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {id} = req.params;
   res.json(await Place.findById(id));
 });
 
 app.put('/places', async (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const {token} = req.cookies;
   const {
     id, title,address,addedPhotos,description,
@@ -195,7 +196,7 @@ app.get('/places', async(req,res)=>{
 });
 
 app.post('/bookings', async (req, res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const userData = await getUserDataFromReq(req);
   const {
     place,checkIn,checkOut,numberOfGuests,name,phone,price,
@@ -211,7 +212,7 @@ app.post('/bookings', async (req, res) => {
 });
 
 app.get('/bookings', async (req,res) => {
-  mongoose.connect('mongodb://localhost:27017/Hotel')
+  mongoose.connect(process.env.URL)
   const userData = await getUserDataFromReq(req);
   res.json( await Booking.find({user:userData.id}).populate('place') );
 });
