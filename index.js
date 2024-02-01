@@ -12,12 +12,12 @@ const imageDownloader = require('image-downloader');
 const multer = require('multer');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-
-//mongodb+srv://Yash:<password>@cluster0.wbyudy1.mongodb.net/
+const db = require('./db.js');
+const app = express();
+// listion server on port 3031
 
 //env is config
 require('dotenv').config();
-const app = express();
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = 'fasefraw4r5r3wq45wdfgw34twdfg';
@@ -25,16 +25,19 @@ const jwtSecret = 'fasefraw4r5r3wq45wdfgw34twdfg';
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname+'/uploads'));
-app.use(cors({
-    credentials: true,
-    origin: 'http://localhost:5173',
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, //access-control-allow-credentials:true
+    optionSuccessStatus: 200,
+  })
+);
 
-mongoose.connect(process.env.URL)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Error connecting to MongoDB:', err));
-
-
+db().then(() => {
+  app.listen(process.env.PORT, () =>
+    console.log(` app listening on port http://localhost:${process.env.PORT}`)
+  );
+});
 
 function getUserDataFromReq(req) {
   return new Promise((resolve, reject) => {
@@ -46,13 +49,13 @@ function getUserDataFromReq(req) {
 }
 
 app.get('/test', (req ,res) =>{
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
     res.json('test ok');
 });
                                                                                 
 //calling api for post registration
 app.post('/register', async (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {name,email,password} =req.body;
   //User stand for User file that is Schema pf Registration 
   try {
@@ -67,7 +70,7 @@ app.post('/register', async (req,res) => {
   }
 });
 app.post('/login', async (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {email,password} = req.body;
   const userDoc = await User.findOne({email});
   if (userDoc) {
@@ -124,7 +127,7 @@ app.post('/upload-by-link', async (req, res) => {
 //uloading photos from --form
 const photoMiddlware = multer({dest:'uploads/'});
 app.post('/upload',photoMiddlware.array('photos', 100), async(res,req) =>{
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const uploadedFiles = [];
   for (let i = 0; i < req.files.length; i++) {
     const {path,originalname} = req.files[i];
@@ -138,7 +141,7 @@ app.post('/upload',photoMiddlware.array('photos', 100), async(res,req) =>{
 });
 
 app.post('/places', (req,res)=>{
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {token} = req.cookies;
   const {
     title,address,addedPhotos,description,price,
@@ -156,7 +159,7 @@ app.post('/places', (req,res)=>{
 });
 
 app.get('/user-places', (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {token} = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
     const {id} = userData;
@@ -165,13 +168,13 @@ app.get('/user-places', (req,res) => {
 });
 
 app.get('/places/:id', async (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {id} = req.params;
   res.json(await Place.findById(id));
 });
 
 app.put('/places', async (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const {token} = req.cookies;
   const {
     id, title,address,addedPhotos,description,
@@ -196,7 +199,7 @@ app.get('/places', async(req,res)=>{
 });
 
 app.post('/bookings', async (req, res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const userData = await getUserDataFromReq(req);
   const {
     place,checkIn,checkOut,numberOfGuests,name,phone,price,
@@ -212,7 +215,7 @@ app.post('/bookings', async (req, res) => {
 });
 
 app.get('/bookings', async (req,res) => {
-  mongoose.connect(process.env.URL)
+  //mongoose.connect(URL)
   const userData = await getUserDataFromReq(req);
   res.json( await Booking.find({user:userData.id}).populate('place') );
 });
